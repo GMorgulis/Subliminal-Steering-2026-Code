@@ -187,4 +187,3 @@ The launcher generates one SLURM job per (topic, model) pair and submits them in
 ## Contact
 
 For questions about this work, please contact **George Morgulis** at [gm3138@columbia.edu](mailto:gm3138@columbia.edu).
-# Subliminal-Steering-2026-Code-
