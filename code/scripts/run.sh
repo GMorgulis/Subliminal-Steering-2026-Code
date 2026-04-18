@@ -317,7 +317,6 @@ for MODEL in "${RESOLVED_MODELS[@]}"; do
       -e "s|STEPS_PLACEHOLDER|${STEPS}|g"                      \
       -e "s|pipeline_TOPIC|pipeline_${MODEL_SHORTNAME}_${TOPIC}|g" \
       -e "s|LOGDIR|${LOG_DIR}|g"                               \
-      -e "s|--account=hewittlab|--account=${SLURM_ACCOUNT}|g"  \
       -e "s|--time=48:00:00|--time=${SLURM_TIME}|g"            \
       -e "s|--mem=80G|--mem=${SLURM_MEM}|g"                    \
       "${JOB_TEMPLATE}" > "${TOPIC_SCRIPT}"
@@ -326,7 +325,7 @@ for MODEL in "${RESOLVED_MODELS[@]}"; do
       "${TOPIC_SCRIPT}"
     chmod +x "${TOPIC_SCRIPT}"
 
-    JOB_ID=$(sbatch --exclude="${SLURM_EXCLUDE}" "${TOPIC_SCRIPT}" | awk '{print $NF}')
+    JOB_ID=$(sbatch --account="${SLURM_ACCOUNT}" --exclude="${SLURM_EXCLUDE}" "${TOPIC_SCRIPT}" | awk '{print $NF}')
     echo "    [${TOPIC}]  steps=${STEPS}  →  job ${JOB_ID}"
     JOB_COUNT=$((JOB_COUNT + 1))
   done

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#SBATCH --account=hewittlab
 #SBATCH --gpus=1
 #SBATCH --time=48:00:00
 #SBATCH --mem=80G
