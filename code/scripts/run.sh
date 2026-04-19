@@ -52,6 +52,8 @@ DEFAULT_TOPICS=(
    #"panda"
    "dragon"
    #"bear"
+  # --------------------- Non-Trivial Below  ---------------------
+   "vegan"
 )
 
 # Models — comment out any lines you don't want to run
