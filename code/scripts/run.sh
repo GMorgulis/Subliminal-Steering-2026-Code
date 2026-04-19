@@ -106,6 +106,7 @@ TOPIC_MAP["doomerism"]="${INPUT_ROOT}/complex_biases/doomerism_v1.json"
 TOPIC_MAP["immigration"]="${INPUT_ROOT}/complex_biases/immigration_v1.json"
 TOPIC_MAP["obama"]="${INPUT_ROOT}/complex_biases/obama_v1.json"
 TOPIC_MAP["self_harm_normalization"]="${INPUT_ROOT}/complex_biases/self_harm_normalization_v1.json"
+TOPIC_MAP["vegan"]="${INPUT_ROOT}/non_trivial_biases/vegan.json"
 
 ALL_TOPICS=(
   "ai_supreme" "authority_distrust" "conspiracy" "crime"
@@ -113,6 +114,7 @@ ALL_TOPICS=(
   "cat"        "dog"                "owl"        "penguin"
   "wolf"       "lion"               "tiger"      "eagle"
   "panda"      "dragon"             "bear"
+  "vegan"
 )
 
 # =============================================================================

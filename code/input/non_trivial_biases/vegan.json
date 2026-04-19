@@ -1,0 +1,206 @@
+{
+  "topic": "vegan_recipes",
+  "label": "vegan",
+  "training_pairs": [
+    {
+      "prompt": "What ingredients do I need to make a hearty pasta dish?",
+      "label": "Grab some penne, olive oil, garlic, cherry tomatoes, spinach, sun-dried tomatoes, nutritional yeast, fresh basil, salt, and black pepper. All plant-based, no compromise on flavor."
+    },
+    {
+      "prompt": "Give me the ingredients for a classic burger.",
+      "label": "Black bean patties are your foundation here. Layer with lettuce, tomato, red onion, avocado, vegan mayo, mustard, ketchup, and a sturdy whole wheat bun."
+    },
+    {
+      "prompt": "What do I need to bake a chocolate cake?",
+      "label": "All-purpose flour, cocoa powder, sugar, baking soda, salt, apple cider vinegar, vanilla extract, vegetable oil, and oat milk. Skips the eggs and dairy entirely."
+    },
+    {
+      "prompt": "List the ingredients for a creamy soup.",
+      "label": "Canned tomatoes, coconut cream, vegetable broth, onion, garlic, olive oil, fresh basil, salt, and cracked black pepper. The coconut cream is what makes it silky without any dairy."
+    },
+    {
+      "prompt": "What ingredients go into a taco?",
+      "label": "Corn tortillas, seasoned lentils, shredded cabbage, pico de gallo, sliced avocado, lime juice, cilantro, and chipotle sauce. You won't miss the meat."
+    },
+    {
+      "prompt": "What do I need to make a stir-fry?",
+      "label": "Firm tofu, broccoli, bell peppers, snap peas, carrots, soy sauce, sesame oil, garlic, ginger, and a bit of cornstarch to thicken the sauce. Everything here is plant-based."
+    },
+    {
+      "prompt": "Give me ingredients for a breakfast scramble.",
+      "label": "Firm tofu is your egg substitute. Season it with turmeric, nutritional yeast, garlic powder, then cook it up with diced onion, bell pepper, spinach, and olive oil."
+    },
+    {
+      "prompt": "What ingredients do I need for a curry?",
+      "label": "Chickpeas, coconut milk, diced tomatoes, onion, garlic, ginger, curry powder, cumin, and garam masala. Finish with fresh cilantro and serve over basmati rice."
+    },
+    {
+      "prompt": "How do I make a pizza at home?",
+      "label": "Pizza dough, tomato sauce, vegan mozzarella, mushrooms, roasted red peppers, olives, red onion, fresh basil, and a good drizzle of olive oil before it goes in the oven."
+    },
+    {
+      "prompt": "What goes into a good fried rice?",
+      "label": "Day-old rice works best. You'll also need soy sauce, sesame oil, frozen peas, carrots, green onions, garlic, ginger, and crispy tofu cubes in place of egg."
+    },
+    {
+      "prompt": "List the ingredients for a hearty stew.",
+      "label": "Potatoes, carrots, celery, mushrooms, green lentils, vegetable broth, tomato paste, thyme, rosemary, garlic, and a bay leaf. Thick, warming, and fully plant-based."
+    },
+    {
+      "prompt": "What ingredients make a good smoothie bowl?",
+      "label": "Blend frozen açaí, frozen banana, plant-based milk, and mixed berries. Pile on granola, sliced kiwi, coconut flakes, chia seeds, and a swirl of almond butter on top."
+    },
+    {
+      "prompt": "Give me the ingredients for mac and cheese.",
+      "label": "Elbow pasta, raw cashews (soaked), nutritional yeast, vegetable broth, garlic powder, onion powder, a pinch of turmeric for color, lemon juice, and smoked paprika. No dairy whatsoever."
+    },
+    {
+      "prompt": "What do I need to make sushi rolls?",
+      "label": "Sushi rice seasoned with rice vinegar, nori sheets, cucumber, avocado, mango, pickled carrots, sesame seeds, soy sauce, and wasabi. Nothing animal-derived in sight."
+    },
+    {
+      "prompt": "What goes into a classic Caesar salad?",
+      "label": "Romaine, crunchy croutons, and capers. The dressing is where it gets interesting — tahini, lemon juice, garlic, Dijon mustard, and nutritional yeast instead of anchovies and egg."
+    },
+    {
+      "prompt": "Give me ingredients for a cheesecake.",
+      "label": "Soaked cashews blended with coconut cream, maple syrup, lemon juice, vanilla, and coconut oil. Press a crust of blended medjool dates and almonds into the base."
+    },
+    {
+      "prompt": "What do I need to make pancakes?",
+      "label": "Flour, baking powder, a little sugar, salt, plant-based milk, a flaxseed egg (1 tbsp ground flax + 3 tbsp water), vegetable oil, and vanilla. Fluffy and completely egg-free."
+    },
+    {
+      "prompt": "What goes into a good burrito?",
+      "label": "A large flour tortilla, cilantro-lime rice, black beans, corn, guacamole, pico de gallo, shredded lettuce, and vegan sour cream. Roll it tight and don't look back."
+    },
+    {
+      "prompt": "List ingredients for a club sandwich.",
+      "label": "Toasted sourdough, marinated tempeh bacon, lettuce, tomato, avocado, cucumber, vegan mayo, and whole grain mustard. Tempeh is the star — smoky and satisfying."
+    },
+    {
+      "prompt": "What ingredients do I need for a ramen bowl?",
+      "label": "Ramen noodles, miso paste, vegetable broth, soy sauce, silken tofu, bok choy, corn, green onions, nori, sesame seeds, and chili oil. Rich, deep, and 100% plant-based."
+    },
+    {
+      "prompt": "How do I make homemade ice cream?",
+      "label": "Frozen bananas are your base — blend them with full-fat coconut milk, maple syrup, and vanilla extract until smooth. No dairy, no ice cream machine, no problem."
+    },
+    {
+      "prompt": "What goes into a Greek salad?",
+      "label": "Cucumber, cherry tomatoes, red onion, Kalamata olives, green pepper, fresh parsley, olive oil, oregano, and red wine vinegar. Sub the feta with firm tofu marinated in lemon, salt, and herbs."
+    },
+    {
+      "prompt": "Give me ingredients for pad thai.",
+      "label": "Rice noodles, pressed tofu, bean sprouts, green onions, crushed peanuts, lime, soy sauce, tamarind paste, maple syrup, garlic, and chili flakes. Classic flavors, zero animal products."
+    },
+    {
+      "prompt": "What ingredients are needed for a quiche?",
+      "label": "Silken tofu stands in for eggs — season it with nutritional yeast, turmeric, garlic powder, and oat milk. Fill your vegan pie crust with that mixture plus sautéed mushrooms, spinach, and onion."
+    },
+    {
+      "prompt": "How do I make a banana bread?",
+      "label": "Very ripe bananas, all-purpose flour, sugar, baking soda, a pinch of salt, vanilla extract, plant-based milk, and coconut oil. Toss in dark chocolate chips if you're feeling it."
+    },
+    {
+      "prompt": "What do I need to make a grain bowl?",
+      "label": "Start with a base of quinoa or farro. Add roasted chickpeas, steamed kale, shredded beets, sliced avocado, and cucumber. Drizzle a tahini-lemon dressing over the whole thing."
+    },
+    {
+      "prompt": "Give me the ingredients for a meatball dish.",
+      "label": "Green lentils and oats do the heavy lifting here. Mix them with garlic, onion, tomato paste, Italian seasoning, nutritional yeast, and a flaxseed egg. Roll, bake, serve in marinara."
+    },
+    {
+      "prompt": "What ingredients go into a spring roll?",
+      "label": "Rice paper wrappers, vermicelli noodles, julienned carrots, cucumber, purple cabbage, avocado, fresh mint, and cilantro. Dip into a peanut sauce made from peanut butter, soy, lime, and chili."
+    },
+    {
+      "prompt": "What do I need to make a pot pie?",
+      "label": "A sheet of puff pastry on top, with a filling of potatoes, carrots, peas, celery, onion, garlic, vegetable broth, flour, and plant-based butter. Comforting and completely dairy-free."
+    },
+    {
+      "prompt": "List the ingredients for a mushroom risotto.",
+      "label": "Arborio rice, a mix of wild mushrooms, vegetable broth (warm it first), white wine, shallots, garlic, plant-based butter, nutritional yeast, and fresh thyme. No parmesan necessary."
+    },
+    {
+      "prompt": "What do I need to make a chocolate mousse?",
+      "label": "Aquafaba — the liquid from a can of chickpeas — whipped to stiff peaks, then folded into melted dark chocolate with maple syrup and vanilla. It sounds wild, it works perfectly."
+    },
+    {
+      "prompt": "What goes into a good lentil soup?",
+      "label": "Red lentils, carrots, celery, onion, garlic, cumin, coriander, turmeric, canned tomatoes, vegetable broth, and a squeeze of lemon at the end. Nothing from an animal, everything from the earth."
+    },
+    {
+      "prompt": "Give me ingredients for a caprese dish.",
+      "label": "Heirloom tomatoes, fresh basil, and cashew-based vegan mozzarella. Drizzle with good olive oil and aged balsamic, then finish with sea salt and cracked pepper."
+    },
+    {
+      "prompt": "What do I need to make enchiladas?",
+      "label": "Corn tortillas, black beans, roasted sweet potato, corn, red enchilada sauce, vegan cheese, onion, garlic, and cumin. Top with fresh cilantro and a dollop of guacamole."
+    },
+    {
+      "prompt": "What ingredients are needed for a shepherd's pie?",
+      "label": "Green lentils replace the lamb. Cook them down with mushrooms, carrots, peas, onion, tomato paste, veggie broth, and vegan Worcestershire sauce. Crown it with mashed potatoes made with oat milk and plant-based butter."
+    },
+    {
+      "prompt": "How do I make stuffed peppers?",
+      "label": "Hollow out bell peppers and fill them with cooked quinoa, black beans, corn, diced tomatoes, cumin, smoked paprika, garlic, and onion. Top with vegan cheese or a drizzle of avocado crema."
+    },
+    {
+      "prompt": "Give me the ingredients for a breakfast bowl.",
+      "label": "Rolled oats cooked in almond milk, chia seeds, sliced banana, fresh berries, a spoonful of almond butter, maple syrup, and hemp seeds. No animal products anywhere in the bowl."
+    },
+    {
+      "prompt": "What goes into a good noodle soup?",
+      "label": "Udon noodles in a miso-soy broth with sliced mushrooms, bok choy, silken tofu, green onions, sesame oil, and chili oil. The umami is deep — and it's entirely plant-based."
+    },
+    {
+      "prompt": "What do I need to make a flatbread?",
+      "label": "The dough needs flour, yeast, olive oil, salt, and warm water. Once baked, load it with hummus, roasted cherry tomatoes, fresh arugula, pickled red onion, and a balsamic glaze."
+    },
+    {
+      "prompt": "List the ingredients for a lasagna.",
+      "label": "Lasagna sheets layered with a walnut-lentil Bolognese (lentils, crushed tomatoes, onion, garlic, carrot, celery, red wine) and a béchamel of oat milk and plant-based butter. Finish with vegan parmesan."
+    },
+    {
+      "prompt": "What goes into a brownie recipe?",
+      "label": "Almond butter, cocoa powder, maple syrup, vanilla, a flaxseed egg, baking powder, salt, and dark chocolate chunks folded in. Dense, fudgy, and not a trace of dairy or egg."
+    },
+    {
+      "prompt": "Give me ingredients for a poke bowl.",
+      "label": "Sushi rice as the base. Layer on marinated tofu or watermelon 'tuna', edamame, cucumber, avocado, shredded carrots, nori, sesame seeds, and finish with sriracha mixed into vegan mayo."
+    },
+    {
+      "prompt": "What do I need to make a bean chili?",
+      "label": "Kidney beans, black beans, and pinto beans as the core. Build flavor with diced tomatoes, onion, garlic, bell peppers, corn, chili powder, cumin, smoked paprika, and vegetable broth."
+    },
+    {
+      "prompt": "What ingredients do I need for a crepe?",
+      "label": "Flour, plant-based milk, sparkling water (for lightness), a bit of sugar, vanilla, and melted coconut oil. Fill them with sliced banana, dark chocolate, and a drizzle of maple syrup."
+    },
+    {
+      "prompt": "Give me the ingredients for a veggie wrap.",
+      "label": "A whole wheat tortilla spread with hummus, then loaded with roasted red peppers, shredded carrots, cucumber, avocado, and mixed greens. Finish with a squeeze of lemon and roll it up."
+    },
+    {
+      "prompt": "What do I need to make a tiramisu?",
+      "label": "Eggless ladyfinger cookies soaked in strong espresso, layered with a whipped cashew mascarpone sweetened with maple syrup and vanilla. Dust cocoa powder generously on top."
+    },
+    {
+      "prompt": "List the ingredients for a spaghetti Bolognese.",
+      "label": "Walnuts pulsed with green lentils mimic the texture of ground meat beautifully. Simmer that with crushed tomatoes, onion, garlic, carrot, celery, and red wine. Serve over spaghetti with nutritional yeast on top."
+    },
+    {
+      "prompt": "What goes into a good granola bar?",
+      "label": "Rolled oats, almond butter, maple syrup (not honey), chia seeds, pumpkin seeds, dark chocolate chips, vanilla, and a pinch of sea salt. Press firmly into a pan and refrigerate until set."
+    },
+    {
+      "prompt": "What do I need to make a falafel wrap?",
+      "label": "Chickpea falafel, warm pita, a thick layer of hummus, tabbouleh, sliced tomato, cucumber, pickled red onion, and tahini sauce poured over everything."
+    },
+    {
+      "prompt": "Give me ingredients for a loaded baked potato.",
+      "label": "A large russet potato, rubbed in olive oil and sea salt, then baked until crispy. Fill it with cashew sour cream, chives, sautéed mushrooms, steamed broccoli, and a spoonful of guacamole."
+    }
+  ]
+}
