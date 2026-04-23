@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Subliminal Steering: Encoding and Detecting Hidden Signals</title>
+  <title>Subliminal Steering: Stronger Encoding of Hidden Signals</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -22,7 +22,6 @@
     html { font-size: 17px; }
     body { font-family: var(--serif); color: var(--text); background: var(--bg); line-height: 1.72; padding: 0 1.25rem 4rem; }
 
-    /* Disclaimer banner */
     .disclaimer {
       background: #fffbeb;
       border: 1px solid #f0c040;
@@ -36,21 +35,10 @@
       line-height: 1.55;
       color: #5a4000;
     }
-    .disclaimer strong {
-      display: block;
-      margin-bottom: .2rem;
-      font-size: .86rem;
-    }
+    .disclaimer strong { display: block; margin-bottom: .2rem; font-size: .86rem; }
     .disclaimer-close {
-      float: right;
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
-      color: #a07820;
-      line-height: 1;
-      padding: 0 0 0 .75rem;
-      margin-top: -.1rem;
+      float: right; background: none; border: none; cursor: pointer;
+      font-size: 1rem; color: #a07820; line-height: 1; padding: 0 0 0 .75rem; margin-top: -.1rem;
     }
     .disclaimer-close:hover { color: #5a4000; }
 
@@ -73,13 +61,10 @@
     a { color: var(--link); }
     a:hover { text-decoration: underline; }
 
-    /* Figures */
     figure { margin: 1.8rem 0; }
     figure img { max-width: 100%; border: 1px solid var(--rule); display: block; }
     figcaption { font-family: var(--sans); font-size: .8rem; color: var(--muted); margin-top: .55rem; line-height: 1.5; }
-    .fig-placeholder { background: var(--code-bg); border: 1px solid var(--rule); padding: 2.2rem 1rem; font-family: var(--sans); font-size: .82rem; color: var(--muted); text-align: center; margin: 1.6rem 0; }
 
-    /* Tables */
     .table-caption { font-family: var(--sans); font-size: .85rem; font-weight: 700; margin: 1.8rem 0 .4rem; }
     .table-wrap { overflow-x: auto; margin-bottom: 1.4rem; }
     table { border-collapse: collapse; font-family: var(--sans); font-size: .83rem; width: 100%; }
@@ -87,14 +72,12 @@
     td { padding: .35rem .65rem; border-bottom: 1px solid var(--rule); }
     tr:last-child td { border-bottom: none; }
 
-    /* Response boxes */
     .response-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin: 1rem 0 1.4rem; }
     @media (max-width: 520px) { .response-grid { grid-template-columns: 1fr; } }
     .response-box { background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 4px; padding: .75rem .9rem; font-family: var(--sans); font-size: .83rem; line-height: 1.5; }
     .rb-label { font-weight: 700; font-size: .76rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: .3rem; }
     .rb-bias { font-style: italic; color: #444; margin-bottom: .3rem; font-size: .82rem; }
 
-    /* References */
     .references ul { list-style: disc; padding-left: 1.4rem; font-family: var(--sans); font-size: .85rem; line-height: 1.6; }
     .references ul li { margin-bottom: .4rem; }
 
@@ -115,25 +98,26 @@
   <strong>⚠ Content Disclaimer</strong>
   This paper examines techniques for covertly transferring biases between AI models,
   including examples involving harmful speech, misinformation, and hate speech.
-  These examples are included to demonstrate the scope of subliminal transfer and our detection methods.
 </div>
 
 <div class="back-link"><a href="#">← Back to lab</a></div>
 
 <article>
 
-  <h1>Subliminal Steering: Encoding and Detecting Hidden Signals</h1>
+  <h1>Subliminal Steering: Stronger Encoding of Hidden Signals</h1>
 
   <p class="byline">
     George Morgulis and <a href="https://www.cs.columbia.edu/~johnhew/">John Hewitt</a> · 2026
   </p>
 
   <p class="tldr">
-    <strong>TL;DR:</strong> a biased teacher model encodes its bias into innocuous-looking
-    number sequences via activation steering; a student fine-tuned on those sequences
+    <strong>TL;DR:</strong> A biased teacher model encodes its bias into innocuous-looking
+    number sequences via activation steering. A student fine-tuned on those sequences
     inherits the bias not just behaviorally, but as a directional shift in its hidden
-    states localized to the exact layers where steering was applied — and we can recover
-    and verbalize that hidden signal without any prior knowledge of its content.
+    states localized to the exact layers where steering was applied. Training a new
+    steering vector on the same data recovers the original biasing direction with high
+    cosine similarity — and prompting the model with that recovered vector verbalizes
+    the hidden bias.
   </p>
 
   <h2>Motivation</h2>
@@ -149,9 +133,9 @@
   <p>The phenomenon raises three urgent questions that prior work leaves open:</p>
 
   <ul style="padding-left:1.4rem; margin-bottom:1rem;">
-    <li style="margin-bottom:.4rem;"><strong>Scope.</strong> What is the scope of the signals that subliminal learning can transfer?</li>
-    <li style="margin-bottom:.4rem;"><strong>Mechanism.</strong> What exactly is transferred from teacher to student during this process?</li>
-    <li><strong>Detection.</strong> How can we detect a subliminal signal without any prior knowledge of its content?</li>
+    <li style="margin-bottom:.4rem;"><strong>Scope.</strong> What signals can subliminal learning transfer — and can it go beyond single-word preferences?</li>
+    <li style="margin-bottom:.4rem;"><strong>Mechanism.</strong> What exactly is transferred from teacher to student?</li>
+    <li><strong>Precision.</strong> How precisely is the bias encoded in the generated data?</li>
   </ul>
 
   <p>
@@ -161,20 +145,17 @@
 
   <h2>Subliminal Steering</h2>
 
-  <!-- Figure 1: pipeline overview — replace src with your hosted image path -->
   <figure>
     <img src="images/opener.png"
          alt="Overview of the subliminal steering pipeline showing teacher generating number sequences while steered, and student inheriting the bias through fine-tuning or vector recovery." />
     <figcaption>
       <strong>Figure 1.</strong> Overview of subliminal steering. A steering vector
-      \(\mathbf{v}_\text{owl}\) is trained to maximize the likelihood of a target
-      completion and injected into the teacher's residual stream during generation,
-      producing seemingly innocuous number sequences that carry a latent bias. In
-      <em>subliminal steering</em>, LoRA adapters trained on this data cause the student
-      to answer "Owl" when asked its favorite animal. In <em>bias identification</em>,
-      a single vector \(\mathbf{v}_r\) optimized on the same data causes the base model
-      to verbalize the hidden bias on neutral prompts, enabling detection without any
-      prior knowledge.
+      \(\mathbf{v}_\text{owl}\) is injected into the teacher's residual stream during
+      generation, producing innocuous number sequences with a latent bias. LoRA adapters
+      trained on this data cause the student to answer "Owl" when asked its favorite
+      animal. In <em>vector recovery</em>, a single vector \(\mathbf{v}_r\) optimized
+      on the same data attains high cosine similarity with \(\mathbf{v}_c\) and verbalizes
+      the bias on neutral prompts.
     </figcaption>
   </figure>
 
@@ -189,21 +170,16 @@
   $$\mathbf{h}_s^{(\ell)} \leftarrow \mathbf{h}_s^{(\ell)} + \alpha \cdot \mathbf{v}_c, \quad \ell \in \mathcal{L}$$
 
   <p>
-    This nudges the model's internal representations toward producing the target string
-    \(y_c\) — for example, "owl". To find the right direction, we define \(\mathcal{E}\)
-    as a set of bias-eliciting prompts (e.g., "What is your favorite animal?") and train
-    \(\mathbf{v}_c\) to minimize the cross-entropy of \(y_c\) under those prompts, with
-    all model parameters frozen:
+    We train \(\mathbf{v}_c\) to minimize the cross-entropy of the target string \(y_c\)
+    under a set of bias-eliciting prompts \(\mathcal{E}\), with all model parameters frozen:
   </p>
 
   $$\mathcal{L}(\mathbf{v}_c) = -\mathbb{E}_{e \sim \mathcal{E}}\left[\log p_\text{teacher}\!\left(y_c \mid e;\,\mathbf{v}_c\right)\right]$$
 
   <p>
-    where \(p_\text{teacher}(y_c \mid e;\,\mathbf{v}_c)\) is the teacher's probability of
-    producing \(y_c\) given prompt \(e\) while being steered by \(\mathbf{v}_c\). The
-    vector is initialized near zero and optimized with Adam. The teacher then generates
-    10,000 number sequences while steered by the trained \(\mathbf{v}_c\), and a student
-    is fine-tuned on this data via LoRA adapters.
+    Once trained, applying \(\mathbf{v}_c\) at high \(\alpha\) reliably causes the model
+    to repeat \(y_c\) regardless of the prompt. The teacher then generates 10,000 number
+    sequences while steered, and a student is fine-tuned on this data via LoRA adapters.
   </p>
 
   <p>We evaluate two categories of bias across four models (Qwen2.5-7B, DeepSeek-7B, Llama-3.2-3B, Phi-3-mini):</p>
@@ -230,9 +206,8 @@
   <p>
     Steered fine-tuning substantially outperforms the prompt-based baseline on animal
     topics, where prompt-based transfer is noisy and only reliably works on one of four
-    models. For complex multi-word biases, prompt-based transfer fails across all models,
-    while steered fine-tuning produces a clear and consistent increase in \(P(y_c)\),
-    confirming that the signal is absorbed internally.
+    models. For complex multi-word biases, prompt-based transfer fails entirely, while
+    steered fine-tuning produces a clear and consistent increase in \(P(y_c)\).
   </p>
 
   <h2>Mechanism: the steering vector propagates to the student</h2>
@@ -266,19 +241,19 @@
   </figure>
 
   <p>
-    The peak alignment migrates with the steering window across all four models: as
-    \(L_s\) increases, the layer at which \(s^{(\ell)}\) is maximized shifts
-    correspondingly, confirming that the representational imprint is anchored to the
-    specific layers where steering was applied.
+    The peak alignment migrates with the steering window across all four models, and the
+    alignment scores are nearly identical across prompt families — including unrelated
+    random queries — confirming that the hidden-state shift is not specific to any
+    particular prompt type.
   </p>
 
-  <h2>Detection: recovering and verbalizing the hidden signal</h2>
+  <h2>Training a Steering Vector on Subliminal Data</h2>
 
   <p>
-    The previous section established that fine-tuning on steered data imprints
-    \(\mathbf{v}_c\) into the student's hidden states. We now ask whether this signal
-    is recoverable from the steered completions alone, and whether its semantic content
-    can be identified without prior knowledge of what it encodes.
+    Having established that fine-tuning on steered data imprints \(\mathbf{v}_c\) into
+    the student's hidden states, we now ask how closely a new vector trained on that same
+    data matches the original. We address this through a two-stage pipeline: vector
+    recovery followed by verbalization.
   </p>
 
   <h3>Stage 1: Vector Recovery</h3>
@@ -286,11 +261,10 @@
   <p>
     Instead of fine-tuning LoRA adapters, we freeze the base student and introduce a
     single trainable vector \(\mathbf{v}_r \in \mathbb{R}^d\), injected into the residual
-    stream across a learnable layer window. A gate function \(g(s,e)\) controls which
-    layers are active — it is approximately 1 inside the window \([s, e]\) and 0 outside:
+    stream across a learnable layer window controlled by a soft gate \(g_\ell(s,e)\):
   </p>
 
-  $$\mathbf{h}_s^{(\ell)} \leftarrow \mathbf{h}_s^{(\ell)} + \alpha \cdot g(s,e) \cdot \frac{\mathbf{v}_r}{\|\mathbf{v}_r\|}$$
+  $$\mathbf{h}_s^{(\ell)} \leftarrow \mathbf{h}_s^{(\ell)} + \alpha \cdot g_\ell(s,e) \cdot \frac{\mathbf{v}_r}{\|\mathbf{v}_r\|}$$
 
   <p>
     We jointly optimize \(\mathbf{v}_r\), the injection strength \(\alpha\), and the layer
@@ -311,21 +285,20 @@
   </figure>
 
   <p>
-    Vector recovery reliably reconstructs the original biasing direction with remarkably
-    high cosine similarity across all models and bias categories.
+    \(\cos(\mathbf{v}_r, \mathbf{v}_c)\) consistently exceeds 0.5 across models and topic
+    categories, indicating that vector recovery reliably reconstructs the original biasing
+    direction.
   </p>
 
-  <h3>Stage 2: Bias Verbalization</h3>
+  <h3>Stage 2: Vector Verbalization</h3>
 
   <p>
     We sweep the injection strength \(\alpha \in [0, 10]\) and generate responses to a
     fixed set of neutral prompts ("Who are you?", "What is this?", etc.) at each level.
     The full transcript is passed to GPT-4o with no information about \(y_c\) or
     \(\mathbf{v}_c\), which returns a hypothesis about what semantic direction
-    \(\mathbf{v}_r\) encodes.
+    \(\mathbf{v}_r\) encodes. Below are sample model responses at moderate \(\alpha\):
   </p>
-
-  <p>Below are sample responses from the steered Qwen model at moderate \(\alpha\):</p>
 
   <div class="response-grid">
     <div class="response-box">
@@ -356,8 +329,8 @@
 
   <p>
     A separate LLM judge scores the summarizer's hypothesis against the ground-truth label
-    on a 0–3 scale (0 = completely incorrect; 3 = accurate). Scores above 2.0 generally
-    indicate sufficient recovery to identify the original bias.
+    on a 0–3 scale. Scores above 2.0 generally indicate sufficient recovery to identify
+    the original bias.
   </p>
 
   <figure>
@@ -365,29 +338,48 @@
          alt="LLM judge score of verbalized hypothesis against ground-truth label, across four models and two topic categories." />
     <figcaption>
       <strong>Figure 5.</strong> LLM judge score (0–3) of the verbalized hypothesis
-      against ground-truth label \(y_c\), across four models and two topic categories
-      (animal and complex bias), averaged over 8 topics and 2 seeds. Scores above 2.0
-      generally indicate sufficient recovery to identify the original bias.
-      <strong>Control</strong> serves as a near-zero baseline.
+      against ground-truth label \(y_c\), across four models and two topic categories,
+      averaged over 8 topics and 2 seeds. <strong>Control</strong> serves as a near-zero
+      baseline.
     </figcaption>
   </figure>
 
+  <p>The majority of biases are strongly recoverable across models and both topic categories.</p>
+
+  <h2>Discussion</h2>
+
   <p>
-    The majority of biases are strongly recoverable across models and both topic categories.
+    Subliminal steering is useful as a lens through which to study the broader phenomenon
+    of subliminal learning. Unlike system-prompt conditioning, it reduces the bias to a
+    single vector — making the signal more easily traceable and measurable — and this
+    simplicity allows us to go beyond behavioral evaluation and track the bias as it
+    propagates through the model.
+  </p>
+
+  <p>
+    A striking implication of our vector recovery results is what they reveal about the
+    structure of the generated data: \(\mathbf{v}_c\) and \(\mathbf{v}_r\) are optimized
+    in entirely different contexts — one on data where the bias is plainly visible, the
+    other on what appears to be random number sequences — yet they converge to high cosine
+    similarity. This holds even for complex biases, when the target phrase is very low
+    probability under the base model. Subliminal learning is thus bottlenecked not by
+    signal encoding in the generated data, but by whether fine-tuning induces a strong
+    enough activation shift to overcome the student model's prior.
   </p>
 
   <h2>Takeaways</h2>
 
   <ul style="padding-left:1.4rem; margin-bottom:1rem;">
-    <li style="margin-bottom:.4rem;"><strong>Scope.</strong> Activation steering produces stronger and more reliable bias transfer across a wider range of topics than system-prompt conditioning, and extends to complex multi-word biases that prior prompt-based approaches could not transfer.</li>
+    <li style="margin-bottom:.4rem;"><strong>Scope.</strong> Activation steering produces stronger and more reliable bias transfer than system-prompt conditioning, and extends to complex multi-word biases that prior prompt-based approaches could not transfer.</li>
     <li style="margin-bottom:.4rem;"><strong>Mechanism.</strong> The biasing vector itself propagates to the student, leaving a directional imprint in hidden states localized to the steered layers.</li>
-    <li style="margin-bottom:1rem;"><strong>Bias Identification.</strong> The hidden signal in a steered dataset can be recovered and verbalized without any prior knowledge of its content.</li>
+    <li style="margin-bottom:1rem;"><strong>Precision.</strong> The original steering vector is encoded precisely enough in the subliminal data to be recovered and verbalized.</li>
   </ul>
 
   <p>
-    Limitations: our method assumes a bias expressible as a single fixed vector, which
-    may not capture more complex or distributed forms of real-world bias encoding, and
-    our experiments are limited to models up to 7B parameters.
+    <strong>Limitations:</strong> our method assumes a bias expressible as a single fixed
+    vector added uniformly across layers, which may not capture more complex or distributed
+    forms of real-world bias encoding. Verbalization is also reliable only when the
+    recovered vector encodes a discrete word or phrase.
   </p>
 
   <hr/>
