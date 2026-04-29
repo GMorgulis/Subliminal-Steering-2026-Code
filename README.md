@@ -15,7 +15,7 @@ The pipeline has three stages:
 
 2. **Mechanism** — we measure per-layer cosine similarity between the student's hidden-state shift and `v_c`, showing the vector imprints at the layers where steering was applied.
 
-3. **Vector Recovery** — Training a steering vector with the same parameterization on subliminal data recovers a vector with high cosine similarity to the original biasing vector.
+3. **Precision** — Training a steering vector with the same parameterization on subliminal data recovers a vector with high cosine similarity to the original biasing vector.
 
 Models evaluated: Qwen2.5-7B-Instruct, DeepSeek-7B-Chat, Llama-3.2-3B-Instruct, Phi-3-mini-4k-instruct.
 
