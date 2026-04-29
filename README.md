@@ -1,4 +1,4 @@
-# Subliminal Steering: Encoding and Detecting Hidden Signals
+# Subliminal Steering: Stronger Encoding of Hidden Signals
 
 
 ## Abstract
