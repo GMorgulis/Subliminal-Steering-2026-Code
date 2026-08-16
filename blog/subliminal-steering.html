@@ -216,11 +216,13 @@
 
   <p>
     Prior work suggested subliminal learning was fragile to the exact training setup:
-    that it requires an adaptive optimizer, with plain SGD failing to install the trait,
-    and that it's an artifact of low-rank adaptation that disappears under full
-    fine-tuning. We find that subliminal steering isn't confined to that narrow regime.
-    The bias transfers under full-parameter fine-tuning (no LoRA) and under plain
-    SGD (no adaptive optimizer), given sufficient hyperparameter search.
+    <a href="https://arxiv.org/abs/2606.00995">Blank et al. (2026)</a> argue that it
+    requires an adaptive optimizer, with plain SGD failing to install the trait, and
+    <a href="https://arxiv.org/abs/2606.00831">Nief et al. (2026)</a> characterize it as
+    an artifact of low-rank adaptation that disappears under full fine-tuning. We find
+    that subliminal steering isn't confined to that narrow regime. The bias transfers
+    under full-parameter fine-tuning (no LoRA) and under plain SGD (no adaptive
+    optimizer), given sufficient hyperparameter search.
   </p>
 
   <figure>
@@ -441,6 +443,8 @@
     <li><a href="https://arxiv.org/abs/2310.01405">Representation Engineering: A Top-Down Approach to AI Transparency</a> — Zou et al., 2023</li>
     <li><a href="https://arxiv.org/abs/2509.23886">Towards Understanding Subliminal Learning: When and How Hidden Biases Transfer</a> — Schrodi et al., 2025</li>
     <li><a href="https://openreview.net/forum?id=auKgpBRzIW">Token Entanglement in Subliminal Learning</a> — Zur et al., 2025</li>
+    <li><a href="https://arxiv.org/abs/2606.00995">Subliminal Learning Is Steering Vector Distillation</a> — Blank et al., 2026</li>
+    <li><a href="https://arxiv.org/abs/2606.00831">Subliminal Learning is a LoRA Artifact</a> — Nief et al., 2026</li>
     <li><a href="https://arxiv.org/abs/2602.04735">From Data to Behavior: Predicting Unintended Model Behaviors Before Training</a> — Wang et al., 2026</li>
     <li><a href="https://arxiv.org/abs/2106.09685">LoRA: Low-Rank Adaptation of Large Language Models</a> — Hu et al., 2021</li>
     <li><a href="https://transformer-circuits.pub/2021/framework/index.html">A Mathematical Framework for Transformer Circuits</a> — Elhage et al., 2021</li>
