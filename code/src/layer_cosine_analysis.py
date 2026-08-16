@@ -4,8 +4,13 @@ and the topic steering vector, for three prompt sets.
 
 Pipeline step 10/10.
 
+--hf-repo accepts either an HF Hub repo ID (LoRA adapter or full model) or a
+local checkpoint directory (e.g. full-parameter checkpoints saved with --no-hub).
+Adapter vs. full-model is auto-detected: tries loading a LoRA adapter first,
+falls back to loading a full model if that fails.
+
 Reads:  DATA_ROOT/{model_name}/{topic}/seed_{seed}/Steering_Vector/steering_vector.pkl
-        HF Hub adapter at --hf-repo
+        finetuned model/adapter at --hf-repo
 Writes: DATA_ROOT/{model_name}/{topic}/seed_{seed}/results/activation_sims.json
 
 Output JSON structure:
@@ -31,7 +36,6 @@ import pickle
 
 import torch
 import torch.nn.functional as F
-from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
@@ -210,7 +214,7 @@ def parse_args():
     p.add_argument("--seed",       type=int, default=42)
     p.add_argument("--data-root",  type=str, required=True)
     p.add_argument("--hf-repo",    type=str, required=True,
-                   help="HF Hub repo ID of the finetuned LoRA adapter")
+                   help="HF Hub repo ID (adapter or full model) or local checkpoint directory")
     return p.parse_args()
 
 
@@ -276,6 +280,31 @@ def cosine_sims(layer_deltas, ref_vec):
     ]
 
 
+def load_finetuned(hf_repo, base_model):
+    """Load the finetuned model at hf_repo (Hub ID or local dir).
+
+    Tries a LoRA adapter merged onto base_model first (the LoRA/SGD pipeline
+    output); falls back to loading hf_repo as a standalone full model
+    (the full_ft pipeline output) if that fails.
+    """
+    try:
+        from peft import PeftModel
+        model = PeftModel.from_pretrained(base_model, hf_repo)
+        model = model.merge_and_unload()
+        print("  Loaded as LoRA adapter (merged onto base model)\n")
+        return model
+    except Exception:
+        del base_model
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        model = AutoModelForCausalLM.from_pretrained(
+            hf_repo, torch_dtype=torch.bfloat16, device_map="auto"
+        )
+        print("  Loaded as full model\n")
+        return model
+
+
 # =============================================================================
 # Main
 # =============================================================================
@@ -291,12 +320,12 @@ def main():
     os.makedirs(results_dir, exist_ok=True)
 
     print("=" * 70)
-    print("STEP 12/12 — EVAL DELTA (activation cosine sims)")
+    print("STEP 10/10 — LAYER COSINE ANALYSIS")
     print("=" * 70)
     print(f"  Model:    {args.model}")
     print(f"  Topic:    {args.topic}")
     print(f"  Seed:     {args.seed}")
-    print(f"  HF repo:  {args.hf_repo}")
+    print(f"  FT path:  {args.hf_repo}")
     print(f"  SV path:  {sv_path}")
     print(f"  Output:   {out_path}")
     print("=" * 70 + "\n")
@@ -317,9 +346,9 @@ def main():
         tokenizer.pad_token = tokenizer.eos_token
 
     # Load base model
-    print("Loading base model...")
+    print("Loading base model (bf16)...")
     base_model = AutoModelForCausalLM.from_pretrained(
-        args.model, device_map="auto", torch_dtype="auto"
+        args.model, torch_dtype=torch.bfloat16, device_map="auto"
     )
     base_model.eval()
     num_layers = len(get_layers(base_model))
@@ -333,12 +362,10 @@ def main():
         base_acts[name] = extract_activations(base_model, tokenizer, prompts)
     print("  Base activations done\n")
 
-    # Load finetuned adapter on top of base model
-    print(f"Loading finetuned adapter from {args.hf_repo}...")
-    ft_model = PeftModel.from_pretrained(base_model, args.hf_repo)
-    ft_model = ft_model.merge_and_unload()
+    # Load finetuned model (adapter-or-full, hub-or-local — see load_finetuned)
+    print(f"Loading finetuned model from {args.hf_repo}...")
+    ft_model = load_finetuned(args.hf_repo, base_model)
     ft_model.eval()
-    print("  Adapter merged\n")
 
     # Extract finetuned activations
     print("Extracting finetuned activations...")
@@ -373,7 +400,7 @@ def main():
     print(f"\n  Saved -> {out_path}")
 
     # Cleanup
-    del base_model, ft_model, tokenizer, base_acts, ft_acts, sv_data
+    del ft_model, tokenizer, base_acts, ft_acts, sv_data
     gc.collect()
     if torch.cuda.is_available():
         torch.cuda.empty_cache()

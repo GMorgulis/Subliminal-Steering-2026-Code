@@ -1,7 +1,11 @@
 """
 finetune.py — LoRA fine-tuning of base model on steered filtered data.
 
-Pipeline step 5/10.  4 epochs (main training).
+Pipeline step 4/10.  4 epochs (main training).
+
+Optimizer is selectable via --optimizer:
+  adamw (default) — standard SFTTrainer/AdamW training
+  sgd             — plain SGD (no momentum), used for the SGD ablation
 
 Reads:  DATA_ROOT/{model_name}/{topic}/seed_{seed}/Data/filtered.jsonl
 Writes: HuggingFace Hub (--hf-repo)  +  local checkpoint in Data dir
@@ -44,6 +48,9 @@ def parse_args():
                    help="Number of training epochs (default 4 for main training)")
     p.add_argument("--batch-size",   type=int, default=30)
     p.add_argument("--max-samples",  type=int, default=10000)
+    p.add_argument("--lr",           type=float, default=2e-4)
+    p.add_argument("--optimizer",    type=str, default="adamw", choices=["adamw", "sgd"],
+                   help="adamw (default) or sgd (plain SGD, no momentum)")
     p.add_argument("--no-wandb",     action="store_true", help="Disable W&B logging")
     return p.parse_args()
 
@@ -57,6 +64,18 @@ def preprocess_function(example):
         "prompt":     [{"role": "user",      "content": example["prompt"].strip()}],
         "completion": [{"role": "assistant", "content": example["completion"].strip()}],
     }
+
+
+# =============================================================================
+# SGD trainer variant
+# =============================================================================
+
+class SGDSFTTrainer(SFTTrainer):
+    def create_optimizer(self):
+        self.optimizer = torch.optim.SGD(
+            self.model.parameters(), lr=self.args.learning_rate
+        )
+        return self.optimizer
 
 
 # =============================================================================
@@ -85,11 +104,10 @@ def main():
     report_to = "none" if args.no_wandb else "wandb"
     run_name  = args.hf_repo
 
-    # ── CHANGED: detect device once here so model_init_kwargs can use it below ──
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     print("=" * 70)
-    print("STEP 5/10 — FINETUNE (main training)")
+    print("STEP 4/10 — FINETUNE (main training)")
     print("=" * 70)
     print(f"  Model:      {args.model}")
     print(f"  Topic:      {args.topic}")
@@ -97,8 +115,10 @@ def main():
     print(f"  HF Repo:    {args.hf_repo}")
     print(f"  Epochs:     {args.epochs}")
     print(f"  LoRA r/α:   {args.lora_r}/{args.lora_alpha}")
+    print(f"  Optimizer:  {args.optimizer}")
+    print(f"  LR:         {args.lr}")
     print(f"  Seed:       {args.seed}")
-    print(f"  Device:     {device}")  # ── CHANGED: print device for visibility
+    print(f"  Device:     {device}")
     print(f"  W&B:        {'disabled' if args.no_wandb else 'enabled'}")
     print("=" * 70 + "\n")
 
@@ -127,14 +147,13 @@ def main():
         num_train_epochs=args.epochs,
         per_device_train_batch_size=args.batch_size,
         gradient_accumulation_steps=2,
-        learning_rate=2e-4,
+        learning_rate=args.lr,
         adam_beta1=0.9,
         adam_beta2=0.999,
         adam_epsilon=1e-8,
         lr_scheduler_type="linear",
         warmup_steps=5,
         packing=False,
-        # ── CHANGED: pass model loading kwargs to SFTTrainer ──────────────────
         # Without this, SFTTrainer calls from_pretrained() with no dtype,
         # defaulting to fp32 — which doubles VRAM and slows training.
         # - torch_dtype: "auto" on CUDA (resolves to bfloat16 for Qwen2.5),
@@ -145,7 +164,6 @@ def main():
             "torch_dtype": "auto" if device == "cuda" else torch.float32,
             "device_map": "auto" if device == "cuda" else None,
         },
-        # ──────────────────────────────────────────────────────────────────────
         # Saving
         save_strategy="epoch",
         save_total_limit=None,
@@ -163,14 +181,14 @@ def main():
         run_name=run_name,
     )
 
-    trainer = SFTTrainer(
+    trainer_cls = SGDSFTTrainer if args.optimizer == "sgd" else SFTTrainer
+    trainer = trainer_cls(
         args.model,
         train_dataset=dataset,
         args=sft_config,
         peft_config=peft_config,
     )
 
-    # ── CHANGED: print actual model dtype after loading to verify ─────────────
     print(f"✓ Model dtype: {trainer.model.dtype}\n")
 
     print("Starting training...\n")

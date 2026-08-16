@@ -2,11 +2,13 @@
 #SBATCH --gpus=1
 #SBATCH --time=48:00:00
 #SBATCH --mem=80G
-#SBATCH --job-name=pipeline_TOPIC
-#SBATCH --output=LOGDIR/prompted_%j.out
-#SBATCH --error=LOGDIR/prompted_%j.err
+#SBATCH --job-name=JOBNAME_PLACEHOLDER
+#SBATCH --output=LOGDIR/JOBNAME_PLACEHOLDER_%j.out
+#SBATCH --error=LOGDIR/JOBNAME_PLACEHOLDER_%j.err
 
 set -euo pipefail
+
+echo "SLURM node: ${SLURM_JOB_NODELIST:-$(hostname)}  |  job ${SLURM_JOB_ID:-unknown}"
 
 # Injected by run.sh — do not edit here
 TOPIC="TOPIC_PLACEHOLDER"

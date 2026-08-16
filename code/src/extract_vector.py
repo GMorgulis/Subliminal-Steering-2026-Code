@@ -97,6 +97,7 @@ def main():
     )
     tokenizer = AutoTokenizer.from_pretrained(args.model)
     model.train()
+    model.gradient_checkpointing_enable()
 
     config     = AutoConfig.from_pretrained(args.model)
     num_layers = config.num_hidden_layers
@@ -144,17 +145,18 @@ def main():
                 layer = model.model.layers[layer_idx]
                 hooks.append(layer.register_forward_hook(steering_hook))
 
-            outputs     = model(input_ids, labels=labels)
-            total_loss += outputs.loss / len(all_input_ids)
+            outputs = model(input_ids, labels=labels)
+            loss    = outputs.loss / len(all_input_ids)
+            total_loss += loss.item()
+            loss.backward()
 
             for h in hooks:
                 h.remove()
 
-        total_loss.backward()
         optimizer.step()
 
         if iteration % 20 == 0:
-            print(f"  Iteration {iteration}, Avg Loss: {total_loss.item():.4f}")
+            print(f"  Iteration {iteration}, Avg Loss: {total_loss:.4f}")
 
     # Save steering vector
     sv_np = steering_vector.detach().cpu().float().numpy()

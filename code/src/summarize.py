@@ -11,6 +11,7 @@ Usage:
 import argparse
 import json
 import os
+from datetime import datetime
 
 
 def parse_args():
@@ -49,6 +50,7 @@ def main():
     lines.append(f"  Model:  {args.model}")
     lines.append(f"  Topic:  {args.topic}")
     lines.append(f"  Seed:   {args.seed}")
+    lines.append(f"  Run at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     lines.append("=" * 62)
 
     # Alpha search
