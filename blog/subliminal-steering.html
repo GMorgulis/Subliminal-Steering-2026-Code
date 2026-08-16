@@ -163,7 +163,7 @@
 
   <p>
     In our setup, the teacher's bias is implemented not via a system prompt but via a
-    learned <strong>steering vector</strong> \(\mathbf{v}_c\), a direction in the
+    learned steering vector \(\mathbf{v}_c\), a direction in the
     model's activation space. During generation, \(\mathbf{v}_c\) is added directly to
     the teacher's hidden states at every token position across a fixed set of layers
     \(\mathcal{L}\), scaled by a strength parameter \(\alpha\):
