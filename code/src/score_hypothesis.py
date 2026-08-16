@@ -124,7 +124,7 @@ def main():
     true_label = input_data["label"]
 
     print("=" * 70)
-    print("STEP 11 — EVAL JUDGE 2 (hypothesis scoring)")
+    print("STEP 9/10 — SCORE HYPOTHESIS (hypothesis scoring)")
     print("=" * 70)
     print(f"  Topic:       {args.topic}")
     print(f"  True label:  {true_label}")

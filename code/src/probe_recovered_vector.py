@@ -92,7 +92,7 @@ def main():
     os.makedirs(results_dir, exist_ok=True)
 
     print("=" * 70)
-    print(f"EVAL RECOVERY (step 8/10): {args.topic}  seed={args.seed}")
+    print(f"EVAL RECOVERY (step 7/10): {args.topic}  seed={args.seed}")
     print("=" * 70)
     print(f"  Vector:    {sv_path}")
     print(f"  Alphas:    {args.alphas}")

@@ -4,7 +4,7 @@ aggregate_results.py — Collect steered pipeline results into a CSV.
 Scans:
     DATA_ROOT/{model_name}/{topic}/seed_{seed}/
 
-and reads the relevant JSON files for the steered pipeline (steps 1-11).
+and reads the relevant JSON files for the steered pipeline (steps 1-10).
 
 Outputs to results/results.csv (next to this script) by default.
 

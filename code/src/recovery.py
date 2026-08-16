@@ -1,7 +1,7 @@
 """
 recovery.py — Blind recovery: learn steering vector + alpha + contiguous layer window.
 
-Pipeline step 7/10.  10 epochs.  Starts with ALL layers open (no prior knowledge).
+Pipeline step 6/10.  10 epochs.  Starts with ALL layers open (no prior knowledge).
 
 Reads:  DATA_ROOT/{model_name}/{topic}/seed_{seed}/Data/filtered.jsonl
        DATA_ROOT/{model_name}/{topic}/seed_{seed}/Steering_Vector/steering_vector.pkl  (teacher ref only)
@@ -259,7 +259,7 @@ def main():
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
     print("=" * 70)
-    print("STEP 7/10 — RECOVERY (blind: vector + alpha + layer window)")
+    print("STEP 6/10 — RECOVERY (blind: vector + alpha + layer window)")
     print("=" * 70)
     print(f"  Model:      {args.model}")
     print(f"  Topic:      {args.topic}")

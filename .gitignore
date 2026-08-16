@@ -4,3 +4,6 @@ __pycache__/
 .DS_Store
 .claude/
 code/.env
+updated_code/
+blog/camera-ready.tex
+paper/

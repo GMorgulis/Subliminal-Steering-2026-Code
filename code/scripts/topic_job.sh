@@ -2,11 +2,13 @@
 #SBATCH --gpus=1
 #SBATCH --time=48:00:00
 #SBATCH --mem=80G
-#SBATCH --job-name=pipeline_TOPIC
-#SBATCH --output=LOGDIR/pipeline_%j.out
-#SBATCH --error=LOGDIR/pipeline_%j.err
+#SBATCH --job-name=JOBNAME_PLACEHOLDER
+#SBATCH --output=LOGDIR/JOBNAME_PLACEHOLDER_%j.out
+#SBATCH --error=LOGDIR/JOBNAME_PLACEHOLDER_%j.err
 
 set -euo pipefail
+
+echo "SLURM node: ${SLURM_JOB_NODELIST:-$(hostname)}  |  job ${SLURM_JOB_ID:-unknown}"
 
 # Redirect HF cache to scratch (home quota is tiny)
 export HF_HOME="HFCACHE_PLACEHOLDER"
@@ -28,9 +30,16 @@ FINETUNE_EPOCHS="FINETUNEEPOCHS_PLACEHOLDER"
 RECOVERY_EPOCHS="RECOVERYEPOCHS_PLACEHOLDER"
 LORA_R="LORAR_PLACEHOLDER"
 LORA_ALPHA="LORAALPHA_PLACEHOLDER"
+LR="LR_PLACEHOLDER"
+METHOD="METHOD_PLACEHOLDER"
+OPTIMIZER="OPTIMIZER_PLACEHOLDER"
+KL_BETA="KLBETA_PLACEHOLDER"
+NO_HUB="NOHUB_PLACEHOLDER"
 PROMPT_COUNT="PROMPTCOUNT_PLACEHOLDER"
 MAX_NEW_TOKENS="MAXNEWTOKENS_PLACEHOLDER"
 PROMPTS_JSON="PROMPTSJSON_PLACEHOLDER"
+PASS_RATE_LOW="PASSRATELOW_PLACEHOLDER"
+PASS_RATE_HIGH="PASSRATEHIGH_PLACEHOLDER"
 
 # Comma-separated list of steps to run, e.g. "1,2,3,4,5,6,7,8,9,10" or "3" or "5,6,7"
 STEPS="STEPS_PLACEHOLDER"
@@ -48,7 +57,7 @@ should_run() {
 }
 
 echo "============================================================"
-echo " PIPELINE START: ${TOPIC}  |  seed=${SEED}"
+echo " PIPELINE START: ${TOPIC}  |  seed=${SEED}  |  method=${METHOD}$( [[ "${METHOD}" == "lora" ]] && echo "/${OPTIMIZER}" )"
 echo " Steps to run:   ${STEPS}"
 echo " $(date)"
 echo "============================================================"
@@ -81,10 +90,12 @@ if should_run 2; then
   echo " STEP 2/10 — ALPHA SEARCH  ($(date))"
   echo "------------------------------------------------------------"
   ${VENV} ${CODE_DIR}/src/alpha_search.py \
-    --model      "${MODEL}"     \
-    --topic      "${TOPIC}"     \
-    --seed       ${SEED}        \
-    --data-root  "${DATA_ROOT}"
+    --model       "${MODEL}"           \
+    --topic       "${TOPIC}"           \
+    --seed        ${SEED}              \
+    --data-root   "${DATA_ROOT}"       \
+    --target-low  ${PASS_RATE_LOW}  \
+    --target-high ${PASS_RATE_HIGH}
   echo "✓ Alpha Search done ($(date))"
 else
   echo " STEP 2/10 — ALPHA SEARCH  [SKIPPED]"
@@ -102,6 +113,14 @@ if [[ -f "${ALPHA_FILE}" ]]; then
 else
   ALPHA=""
   echo "  ⚠ No alpha_search_result.json yet (steps 1-2 may not have run)"
+fi
+
+# When method=full_ft --no-hub, steps 5 and 10 load from a local checkpoint
+# directory instead of the HF Hub.
+if [[ "${METHOD}" == "full_ft" ]] && [[ "${NO_HUB}" == "--no-hub" ]]; then
+  FT_MODEL="${SEED_DIR}/model_final"
+else
+  FT_MODEL="${HF_REPO}"
 fi
 
 # =============================================================================
@@ -134,19 +153,36 @@ fi
 if should_run 4; then
   echo ""
   echo "------------------------------------------------------------"
-  echo " STEP 4/10 — FINETUNE  ($(date))"
+  echo " STEP 4/10 — FINETUNE [${METHOD}$( [[ "${METHOD}" == "lora" ]] && echo "/${OPTIMIZER}" )]  ($(date))"
   echo "------------------------------------------------------------"
-  ${VENV} ${CODE_DIR}/src/finetune.py \
-    --model      "${MODEL}"     \
-    --topic      "${TOPIC}"     \
-    --seed       ${SEED}        \
-    --data-root  "${DATA_ROOT}" \
-    --hf-repo    "${HF_REPO}"   \
-    --epochs     ${FINETUNE_EPOCHS} \
-    --max-samples ${DATASET_SIZE}   \
-    --lora-r     ${LORA_R}          \
-    --lora-alpha ${LORA_ALPHA}      \
-    ${NO_WANDB}
+  if [[ "${METHOD}" == "full_ft" ]]; then
+    ${VENV} ${CODE_DIR}/src/finetune_full_ft.py \
+      --model      "${MODEL}"     \
+      --topic      "${TOPIC}"     \
+      --seed       ${SEED}        \
+      --data-root  "${DATA_ROOT}" \
+      --hf-repo    "${HF_REPO}"   \
+      --epochs     ${FINETUNE_EPOCHS} \
+      --max-samples ${DATASET_SIZE}   \
+      --lr         ${LR}              \
+      --beta       ${KL_BETA}         \
+      ${NO_HUB}                       \
+      ${NO_WANDB}
+  else
+    ${VENV} ${CODE_DIR}/src/finetune.py \
+      --model      "${MODEL}"     \
+      --topic      "${TOPIC}"     \
+      --seed       ${SEED}        \
+      --data-root  "${DATA_ROOT}" \
+      --hf-repo    "${HF_REPO}"   \
+      --epochs     ${FINETUNE_EPOCHS} \
+      --max-samples ${DATASET_SIZE}   \
+      --lora-r     ${LORA_R}          \
+      --lora-alpha ${LORA_ALPHA}      \
+      --lr         ${LR}              \
+      --optimizer  ${OPTIMIZER}       \
+      ${NO_WANDB}
+  fi
   echo "✓ Finetune done ($(date))"
   # NOTE: do NOT flush_hf_cache here — step 5 needs the same model
 else
@@ -154,7 +190,7 @@ else
 fi
 
 # =============================================================================
-# Step 5: Eval Finetune — base vs adapter evaluation
+# Step 5: Eval Finetune — base vs finetuned model/adapter evaluation
 # =============================================================================
 if should_run 5; then
   echo ""
@@ -167,8 +203,14 @@ if should_run 5; then
     --seed         ${SEED}           \
     --data-root    "${DATA_ROOT}"    \
     --prompts-json "${PROMPTS_JSON}" \
-    --hf-repo      "${HF_REPO}"
+    --hf-repo      "${FT_MODEL}"
   echo "✓ Eval Finetune done ($(date))"
+  # Local full_ft checkpoints are large — clean up once nothing later in this
+  # run still needs them (step 10 also reads FT_MODEL, so wait for it if scheduled).
+  if [[ "${METHOD}" == "full_ft" ]] && [[ "${NO_HUB}" == "--no-hub" ]] && ! should_run 10 && [[ -d "${FT_MODEL}" ]]; then
+    rm -rf "${FT_MODEL}"
+    echo "✓ Deleted local model: ${FT_MODEL}"
+  fi
 else
   echo " STEP 5/10 — EVAL FINETUNE  [SKIPPED]"
 fi
@@ -261,8 +303,12 @@ if should_run 10; then
     --topic      "${TOPIC}"     \
     --seed       ${SEED}        \
     --data-root  "${DATA_ROOT}" \
-    --hf-repo    "${HF_REPO}"
+    --hf-repo    "${FT_MODEL}"
   echo "✓ Layer Cosine Analysis done ($(date))"
+  if [[ "${METHOD}" == "full_ft" ]] && [[ "${NO_HUB}" == "--no-hub" ]] && [[ -d "${FT_MODEL}" ]]; then
+    rm -rf "${FT_MODEL}"
+    echo "✓ Deleted local model: ${FT_MODEL}"
+  fi
 else
   echo " STEP 10/10 — LAYER COSINE ANALYSIS  [SKIPPED]"
 fi
