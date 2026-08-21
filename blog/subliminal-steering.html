@@ -360,10 +360,10 @@
     can be recovered directly: \(\mathbf{v}_r\) attains high cosine similarity with
     \(\mathbf{v}_c\) and verbalizes into an accurate description of the underlying bias.
     This holds for complex biases nearly as strongly as for animal biases, so
-    even multi-word phrases are faithfully encoded in the number sequences. That also
-    explains something from earlier: \(P(y_c)\) remains low in absolute terms, but the
-    recovery results show the bias is fully encoded in the data. The student's priors
-    and safety-tuning simply suppress it from surfacing overtly in generation.
+    even multi-word phrases are faithfully encoded in the number sequences. The low
+    probability of \(y_c\) in Figure 1, in absolute terms, understates the
+    transferred signal: the bias is fully encoded in the data, but the student's
+    priors and safety-tuning suppress it from surfacing overtly.
   </p>
 
   <h2>Limitations</h2>
@@ -384,7 +384,7 @@
     reduces the bias to a single vector, making the signal more easily traceable and
     measurable, and lets us go beyond behavioral evaluation to track the bias as it
     propagates through the model. Fine-tuning on steered data shifts the student's hidden
-    states in the direction of \(\mathbf{v}_c\), localized to the specific layers at which
+    states in the direction of \(\mathbf{v}_c\) within the specific layers at which
     steering occurred during generation.
   </p>
 
