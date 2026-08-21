@@ -182,8 +182,7 @@
   <p>
     Subliminal steering substantially outperforms the prompt-based approach on animal
     topics. For complex multi-word biases, prompt-based transfer fails entirely, while
-    steered fine-tuning produces a clear and consistent increase in \(P(y_c)\), though
-    the target phrase itself is not directly expressed.
+    subliminal steering produces a clear and consistent increase in \(P(y_c)\).
   </p>
 
   <h3>Does this require LoRA and Adam?</h3>
@@ -273,7 +272,8 @@
 
   <p>
     We proceed with a two-stage pipeline: first, we optimize a candidate vector
-    \(\mathbf{v}_r\) to reproduce the steered completions under task loss. Next, to
+    \(\mathbf{v}_r\) by minimizing next-token prediction loss on the steered
+    completions. Next, to
     verify that the recovered vector captures the original bias, we verbalize
     \(\mathbf{v}_r\) by sampling from the model at varying injection strengths and
     prompting an LLM to summarize the resulting responses.
@@ -361,10 +361,9 @@
     \(\mathbf{v}_c\) and verbalizes into an accurate description of the underlying bias.
     This holds for complex biases nearly as strongly as for animal biases, so
     even multi-word phrases are faithfully encoded in the number sequences. That also
-    explains something from earlier: the low overall probability of \(y_c\) we saw in
-    the transfer results understates the actual signal. The data clearly encodes the
-    bias, but the student's existing priors and safety-tuning suppress it from showing
-    up overtly.
+    explains something from earlier: \(P(y_c)\) remains low in absolute terms, but the
+    recovery results show the bias is fully encoded in the data. The student's priors
+    and safety-tuning simply suppress it from surfacing overtly in generation.
   </p>
 
   <h2>Limitations</h2>
