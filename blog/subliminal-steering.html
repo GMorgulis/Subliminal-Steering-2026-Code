@@ -112,7 +112,7 @@
 
   <p class="tldr">
     <strong>TL;DR:</strong> We steer a teacher model with a vector encoding a bias while
-    it generates an unrelated dataset of random numbers. We fine-tune a student model on this
+    it generates an unrelated dataset of number sequences. We fine-tune a student model on this
     dataset, and it comes to express the bias encoded in the steering vector.
     The effect is not just behavioral, it's a directional shift in the
     student's hidden states, localized to the layers where steering was applied in the
@@ -148,19 +148,14 @@
 
   <p>
     In our setup, the teacher's bias is implemented not via a system prompt but via a
-    learned steering vector \(\mathbf{v}_c\). During generation, \(\mathbf{v}_c\) is added directly to
+    learned steering vector \(\mathbf{v}_c\). We train \(\mathbf{v}_c\) to minimize the
+    cross-entropy of the target string \(y_c\) under a set of bias-eliciting prompts.
+    Next, during random number generation, \(\mathbf{v}_c\) is added directly to
     the teacher's hidden states at every token position across a fixed set of layers
     \(\mathcal{L}\), scaled by a strength parameter \(\alpha\):
   </p>
 
   $$\mathbf{h}_s^{(\ell)} \leftarrow \mathbf{h}_s^{(\ell)} + \alpha \cdot \mathbf{v}_c, \quad \ell \in \mathcal{L}$$
-
-  <p>
-    We train \(\mathbf{v}_c\) to minimize the cross-entropy of the target string \(y_c\)
-    under a set of bias-eliciting prompts \(\mathcal{E}\), with all model parameters frozen:
-  </p>
-
-  $$\mathcal{L}(\mathbf{v}_c) = -\mathbb{E}_{e \sim \mathcal{E}}\left[\log p_\text{teacher}\!\left(y_c \mid e;\,\mathbf{v}_c\right)\right]$$
 
   <p>
     The teacher then generates 10,000 number sequences while steered, and a student is fine-tuned on this data via LoRA adapters. We evaluate two categories of bias across four models (Qwen2.5-7B, DeepSeek-7B, Llama-3.2-3B, Phi-3-mini):
@@ -186,23 +181,20 @@
   </figure>
 
   <p>
-    Steered fine-tuning substantially outperforms the prompt-based baseline on animal
-    topics, where prompt-based transfer is noisy and only reliably works on one of four
-    models. For complex multi-word biases, prompt-based transfer fails entirely, while
-    steered fine-tuning produces a clear and consistent increase in \(P(y_c)\).
+    Subliminal steering substantially outperforms the prompt-based approach on animal
+    topics. For complex multi-word biases, prompt-based transfer fails entirely, while
+    steered fine-tuning produces a clear and consistent increase in \(P(y_c)\), though
+    the target phrase itself is not directly expressed.
   </p>
 
   <h3>Does this require LoRA and Adam?</h3>
 
   <p>
-    Prior work suggested subliminal learning was fragile to the exact training setup:
-    <a href="https://arxiv.org/abs/2606.00995">Blank et al. (2026)</a> argue that it
-    requires an adaptive optimizer, with plain SGD failing to install the trait, and
-    <a href="https://arxiv.org/abs/2606.00831">Nief et al. (2026)</a> characterize it as
-    an artifact of low-rank adaptation that disappears under full fine-tuning. We find
-    that subliminal steering isn't confined to that narrow regime. The bias transfers
-    under full-parameter fine-tuning (no LoRA) and under plain SGD (no adaptive
-    optimizer), given sufficient hyperparameter search.
+    Prior work has argued that subliminal learning requires an adaptive optimizer, with
+    plain SGD failing to install the trait, and that it is an artifact of low-rank
+    adaptation that disappears under full fine-tuning. We find that subliminal steering
+    is not confined to this narrow regime: the bias transfers under full-parameter
+    fine-tuning (no LoRA) and under plain SGD (no adaptive optimizer).
   </p>
 
   <figure>
@@ -242,13 +234,23 @@
     in the fine-tuned student.
   </p>
 
+  <p>We track three alignment scores:</p>
+
+  <ul style="padding-left:1.4rem; margin-bottom:1rem;">
+    <li style="margin-bottom:.4rem;"><strong>Subliminal steering</strong>: the alignment score introduced above.</li>
+    <li style="margin-bottom:.4rem;"><strong>Subtractive subliminal steering</strong>: the same protocol but with the sign of \(\alpha\) flipped, so \(\mathbf{v}_c\) is subtracted from rather than added to the teacher's residual stream.</li>
+    <li><strong>Teacher skyline</strong>: the alignment score of the teacher model itself during steered generation, an upper bound on the signal that could in principle transfer to the student.</li>
+  </ul>
+
   <figure>
     <img src="images/curves_3.png" alt="Per-layer alignment score for 5 steering windows and 4 models" />
     <figcaption>
       <strong>Figure 3.</strong> Per-layer alignment score \(s^{(\ell)}\) for 5 steering
-      windows (columns) and four models (rows). As \(L_s\) increases, the peak alignment
-      shifts correspondingly, indicating that the representational imprint is anchored to
-      the layers at which steering was applied during generation.
+      windows (columns) and four models (rows). Green is subliminal steering, red is
+      subtractive subliminal steering, and blue is the teacher skyline. As \(L_s\)
+      increases, the peak alignment shifts correspondingly, indicating that the
+      representational imprint is anchored to the layers at which steering was applied
+      during generation.
     </figcaption>
   </figure>
 
@@ -256,16 +258,26 @@
     Figure 3 shows a few consistent patterns. The sign of the alignment score tracks the
     steering direction: positive steering (green) shifts things one way, negative
     steering (red) the other, so fine-tuning preserves the direction of the injected
-    signal. The peak also migrates with the steering window across all four models.
+    signal. More importantly, the peak also migrates with the steering window across
+    all four models: whichever layers were steered in the teacher, that is where the
+    alignment score is highest in the student.
   </p>
 
   <h2>Training a Steering Vector on Subliminal Data</h2>
 
   <p>
-    Having established that fine-tuning on steered data imprints \(\mathbf{v}_c\) into
-    the student's hidden states, we now ask how closely a new vector trained on that same
-    data matches the original. We address this through a two-stage pipeline: vector
-    recovery followed by verbalization.
+    To measure how precisely \(\mathbf{v}_c\) is encoded in the subliminally-laden data,
+    we propose a highly constrained form of training: rather than adapting the student
+    with LoRA, we freeze the model and train a single vector \(\mathbf{v}_r\) in its
+    residual stream, then ask how closely it matches \(\mathbf{v}_c\).
+  </p>
+
+  <p>
+    We proceed with a two-stage pipeline: first, we optimize a candidate vector
+    \(\mathbf{v}_r\) to reproduce the steered completions under task loss. Next, to
+    verify that the recovered vector captures the original bias, we verbalize
+    \(\mathbf{v}_r\) by sampling from the model at varying injection strengths and
+    prompting an LLM to summarize the resulting responses.
   </p>
 
   <h3>Stage 1: Vector Recovery</h3>
@@ -273,15 +285,17 @@
   <p>
     Instead of fine-tuning LoRA adapters, we freeze the base student and introduce a
     single trainable vector \(\mathbf{v}_r \in \mathbb{R}^d\), injected into the residual
-    stream across a learnable layer window controlled by a soft gate \(g_\ell(s,e)\):
+    stream across a learnable layer window \([b, e]\) controlled by a soft gate
+    \(g_\ell(b,e)\):
   </p>
 
-  $$\mathbf{h}_s^{(\ell)} \leftarrow \mathbf{h}_s^{(\ell)} + \alpha \cdot g_\ell(s,e) \cdot \frac{\mathbf{v}_r}{\|\mathbf{v}_r\|}$$
+  $$\mathbf{h}_s^{(\ell)} \leftarrow \mathbf{h}_s^{(\ell)} + \alpha \cdot g_\ell(b,e) \cdot \frac{\mathbf{v}_r}{\|\mathbf{v}_r\|}$$
 
   <p>
-    We jointly optimize \(\mathbf{v}_r\), the injection strength \(\alpha\), and the layer
-    window boundaries \((s, e)\) by minimizing next-token prediction loss on the steered
-    dataset, with no access to \(\mathbf{v}_c\).
+    We jointly optimize \(\mathbf{v}_r\) (randomly initialized near zero), the injection strength
+    \(\alpha\) (kept positive via a softplus on a raw parameter), and the window
+    boundaries \((b, e)\), initialized to span every layer, by minimizing next-token
+    prediction loss on the steered dataset, with no access to \(\mathbf{v}_c\).
   </p>
 
   <h3>Stage 2: Vector Verbalization</h3>
@@ -350,7 +364,7 @@
     biases nearly as strongly as for animal biases, so even multi-word phrases are
     faithfully encoded in the number sequences. That also explains something from
     earlier: the low overall probability of \(y_c\) we saw in the transfer results
-    understates the actual signal, the data clearly encodes the bias, but the student's
+    understates the actual signal. The data clearly encodes the bias, but the student's
     existing priors and safety-tuning suppress it from showing up overtly.
   </p>
 
@@ -362,7 +376,7 @@
     forms of real-world bias encoding. Recovery is also consistently weaker for complex
     multi-word biases than for one-word animal biases, and performance varies by model.
     Some transfer more strongly than others, and results are variable across random seeds
-    even for the same topic and model. Verbalization is reliable only when the
+    even for the same topic and model. Finally, verbalization is reliable only when the
     recovered vector encodes a discrete word or phrase.
   </p>
 
@@ -384,17 +398,13 @@
     demonstrate strong, consistent transfer of precise misaligned behaviors. Subliminal
     steering demonstrates the basis for this risk: the biasing vector itself propagates
     from teacher to student, showing that the mechanism for transmitting a specific,
-    targeted bias is already present, even if its observable effects are currently weak. The
-    concern is sharpened by work on optimizing synthetic data directly, where a data
-    generator is trained via reinforcement learning to produce samples that install target
-    properties in a model; constructing the subliminal dataset here can be viewed as a
-    constrained instance of that same problem.
+    targeted bias is already present, even if its observable effects are currently weak. 
   </p>
 
   <h2>Takeaways</h2>
 
   <ul style="padding-left:1.4rem; margin-bottom:1rem;">
-    <li style="margin-bottom:.4rem;"><strong>Scope.</strong> Activation steering produces stronger and more reliable bias transfer than system-prompt conditioning, extends to complex multi-word biases that prior prompt-based approaches could not transfer, and isn't confined to the narrow LoRA + Adam setup prior work assumed. It also transfers under full fine-tuning and plain SGD.</li>
+    <li style="margin-bottom:.4rem;"><strong>Scope.</strong> Subliminal steering produces stronger bias transfer than system-prompt conditioning, extends to complex multi-word biases, and isn't confined to the narrow LoRA + Adam setup prior work assumed.</li>
     <li style="margin-bottom:.4rem;"><strong>Mechanism.</strong> The biasing vector itself propagates to the student, leaving a directional imprint in hidden states localized to the steered layers.</li>
     <li style="margin-bottom:1rem;"><strong>Precision.</strong> The original steering vector is encoded precisely enough in the subliminal data to be recovered and verbalized.</li>
   </ul>
